@@ -1,0 +1,39 @@
+# Ignora l'ambiente virtuale
+venv/
+env/
+.venv/
+reinforcement_learning
+
+
+# Ignora file temporanei generati da Pygame
+*.png
+*.jpg
+*.gif
+*.wav
+*.mp3
+*.ogg
+*.log
+*.dat
+
+# Ignora cartelle di output, log o dati temporanei
+output/
+logs/
+temp/
+
+# Ignora file creati da Python, come bytecode compilato
+__pycache__/
+*.pyc
+
+# Ignora file di salvataggio modelli o checkpoints
+*.h5
+*.pkl
+
+# Ignora file di sistema (es. macOS e Windows)
+.DS_Store
+Thumbs.db
+
+#bin
+#include
+#lib
+
+Ex3
