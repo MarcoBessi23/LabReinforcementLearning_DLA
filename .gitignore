@@ -6,7 +6,8 @@ reinforcement_learning
 
 
 # Ignora file temporanei generati da Pygame
-*.png
+Lunar_try.png
+README.md
 *.jpg
 *.gif
 *.wav

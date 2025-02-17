@@ -8,7 +8,7 @@ import random
 from collections import deque, namedtuple
 from NeuralNet import PolicyNet,LunarPolicy, BaselineNet, LunarBaseline, ReplayMemory
 from torch.distributions import Categorical
-
+import os
 
 def select_action(env, obs, policy):
     
@@ -16,7 +16,6 @@ def select_action(env, obs, policy):
     action = dist.sample()
     log_prob = dist.log_prob(action)
     return (action.item(), log_prob.reshape(1))
-
 
 def compute_returns(rewards, gamma):
     trajectory_len = len(rewards)
@@ -51,6 +50,7 @@ def run_episode(env, policy, maxlen=500):
         # Advance the episode by executing the selected action.
         (obs, reward, term, trunc, _) = env.step(action)
         rewards.append(reward)
+        #Interrupt the training if you get a score that is to hard to recover from.
         if np.sum(rewards) < -250:
             term = True
         if term or trunc:
@@ -58,7 +58,7 @@ def run_episode(env, policy, maxlen=500):
     return (observations, actions, torch.cat(log_probs), rewards)
 
 
-def run_episode_eps(env, policy, eps,  maxlen=500):
+def run_episode_epsilon_greedy(env, policy, eps,  maxlen=500):
     observations = []
     actions      = []
     log_probs    = []
@@ -72,17 +72,15 @@ def run_episode_eps(env, policy, eps,  maxlen=500):
         dist = Categorical(policy(obs))
 
         if random.random() < eps:
-            #print('QUI USA EPS')
+            #EPS
             m = Categorical(torch.tensor([ 0.25, 0.25, 0.25, 0.25 ]))
             action = m.sample()
             log_prob = dist.log_prob(action)
-            #print(f'---------------------------TIPO DI AZIONE {action}-----------------------------------------')
             action = action.item()
 
         else :
-            #print('QUI USA GREEDY')
+            #GREEDY
             action = torch.argmax(dist.probs)
-            #print(f'---------------------------TIPO DI AZIONE {action}-----------------------------------------')
             log_prob = dist.log_prob(action)
             action = action.item()
 
@@ -105,7 +103,7 @@ def epsilon_schedule(episode, epsilon_initial, epsilon_final, decay_episodes):
 # Lunar Lander is solved when we obtain a score of 200 over the last 100 iteration
 SOLVED_SCORE = 200
 
-def reinforce_eps(policy, env, gamma=0.9, num_episodes=500, baseline=None):
+def reinforce_epsilon_greedy(policy, env, gamma=0.9, num_episodes=500, baseline=None):
 
     epsilon_initial = 0.9
     epsilon_final   = 0.01
@@ -132,7 +130,7 @@ def reinforce_eps(policy, env, gamma=0.9, num_episodes=500, baseline=None):
         print(f' EPISODE NUMBER {episode}')
         eps = epsilon_schedule(episode, epsilon_initial, epsilon_final, decay_episodes)
         # Run an episode of the environment, collect everything needed for policy update.
-        (observations, actions, log_probs, rewards) = run_episode_eps(env, policy, eps)
+        (observations, actions, log_probs, rewards) = run_episode_epsilon_greedy(env, policy, eps)
 
         # Compute the discounted reward for every step of the episode.
         returns = torch.tensor(compute_returns(rewards, gamma), dtype=torch.float32)
@@ -170,7 +168,6 @@ def reinforce_eps(policy, env, gamma=0.9, num_episodes=500, baseline=None):
 
     return running_rewards
 
-buffer = ReplayMemory(10000)
 
 
 def reinforce(policy, env, gamma=0.99, num_episodes=500, baseline=None):
@@ -190,10 +187,10 @@ def reinforce(policy, env, gamma=0.99, num_episodes=500, baseline=None):
         # Run an episode of the environment, collect everything needed for policy update.
         (observations, actions, log_probs, rewards) = run_episode(env, policy)
         
-        #buffer.push((observations, actions, log_probs, rewards))
-
+        
         # Compute the discounted reward for every step of the episode.
         #returns = torch.tensor(compute_returns(rewards, gamma), dtype=torch.float32)
+        #here try to reduce variance in the rewards
         rew = torch.tensor(rewards, dtype=torch.float32) * 0.01
         returns = compute_returns(rew, gamma)
         running_rewards.append(np.sum(rewards))
@@ -241,8 +238,7 @@ plt.plot(reinforce(policy, env, num_episodes= 3000, gamma=0.99,
 torch.save(policy.state_dict(), 'Ex1/Lunar_params.pth')
 # Close up everything
 env.close()
-#plt.show()
-import os
+
 path_lunar = os.path.join(os.getcwd(), 'Ex1/Results/Lunar.png')
 plt.savefig(path_lunar)
 
@@ -253,5 +249,5 @@ for _ in range(5):
     _,_,_, score = run_episode(env_render, policy)
     scores.append(np.sum(score))
 
-#print(np.mean(scores))
-#env_render.close()
+print(np.mean(scores))
+env_render.close()

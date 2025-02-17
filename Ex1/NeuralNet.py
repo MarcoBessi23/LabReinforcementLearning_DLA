@@ -30,11 +30,6 @@ class BaselineNet(nn.Module):
         return s
 
 
-#nn.Sequential(nn.Linear(env.observation_space.shape[0],16),
-#              nn.ReLU(),
-#              nn.Linear(16, 16),
-#              nn.ReLU(), 
-#              nn.Linear(16, env.action_space.n))
 
 class LunarPolicy(nn.Module):
     def __init__(self, env, inner):

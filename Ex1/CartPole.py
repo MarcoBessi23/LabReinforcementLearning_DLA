@@ -20,8 +20,7 @@ def select_action(env, obs, policy):
 
 # Utility to compute the discounted total reward. Torch doesn't like flipped arrays, so we need to
 # .copy() the final numpy array. There's probably a better way to do this.
-def compute_returns(rewards, gamma):
-    
+def compute_returns(rewards, gamma):    
     return np.flip(np.cumsum([gamma**(i+1)*r for (i, r) in enumerate(rewards)][::-1]), 0).copy()
 
 # Given an environment and a policy, run it up to the maximum number of steps.
