@@ -3,7 +3,7 @@ venv/
 env/
 .venv/
 reinforcement_learning
-
+videos
 
 # Ignora file temporanei generati da Pygame
 Lunar_try.png

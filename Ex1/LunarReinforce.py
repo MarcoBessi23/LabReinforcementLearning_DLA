@@ -6,6 +6,7 @@ import numpy as np
 from collections import deque
 from torch.distributions import Categorical
 import os
+import argparse
 from NeuralNet import LunarBaseline, LunarPolicy
 
 
@@ -110,37 +111,64 @@ class REINFORCEAgent_Lunar:
 
             print(f"Episode reward: {self.results[-1]}")
 
+        torch.save(self.policy.state_dict(), 'Ex1/Lunar_params.pth')
         return self.results
 
+    def test(self, env_render, parameters_path):
+        self.env = env_render
+        self.policy.load_state_dict(torch.load(parameters_path, weights_only = True))
+        self.policy.eval()
+        scores = []
+        for _ in range(1):
+            _, _, _, score = self.run_episode()
+            scores.append(np.sum(score))
 
-def main():
+        print(f"Average score: {np.mean(scores)}")
+        self.env.close()
+
+
+def main(mode):
     env = gym.make("LunarLander-v3")
+
     policy = LunarPolicy(env, 128)
     baseline = LunarBaseline(env, 128)
-
     agent = REINFORCEAgent_Lunar(policy, baseline, env, num_episodes=3000, gamma=0.99)
 
-    rewards = agent.train()
-
-    # Save trained policy and plot results
-    torch.save(policy.state_dict(), 'Ex1/Lunar_params.pth')
-
-    plt.plot(rewards)
-    path_lunar = os.path.join(os.getcwd(), 'Ex1/Results/Lunar_try.png')
-    plt.savefig(path_lunar)
-
-    env_render = gym.make("LunarLander-v3", render_mode='human')
-    policy.eval()
-    scores = []
-    agent.env = env_render
-
-    for _ in range(5):
-        _, _, _, score = agent.run_episode()
-        scores.append(np.sum(score))
-
-    print(f"Average score: {np.mean(scores)}")
-    env_render.close()
-
+    if mode == "train":
+        rewards = agent.train()
+        plt.plot(rewards)
+        path_lunar = os.path.join(os.getcwd(), 'Ex1/Results/Lunar.png')
+        plt.savefig(path_lunar)
+    elif mode == "test":
+        env_render = gym.make("LunarLander-v3", render_mode='human')
+        agent.test(env_render, 'Ex1/Lunar_params.pth')
+    else:
+        print("Select one : 'train' or 'test'")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", choices=["train", "test"], help="Select between train and test")
+    args = parser.parse_args()
+
+    main(args.mode)
+
+
+
+
+
+##!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+###USED ONLY TO REGISTER THE GIF FOR GITHUB README, DON'T UNCOMMENT
+#def test_and_record():
+#    env = gym.make("LunarLander-v3", render_mode='rgb_array')
+#    env = gym.wrappers.RecordVideo(env, video_folder="videos", episode_trigger=lambda x: True, name_prefix= "lunar_reinforce")
+#
+#    policy = LunarPolicy(env, 128)
+#    baseline = LunarBaseline(env, 128)
+#    agent = REINFORCEAgent_Lunar(policy, baseline, env)
+#
+#    agent.test(env, 'Ex1/Lunar_params.pth')
+#    env.close()
+#
+#if __name__ == "__main__":
+#    test_and_record()
+

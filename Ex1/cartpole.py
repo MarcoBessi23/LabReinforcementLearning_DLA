@@ -8,7 +8,7 @@ from collections import deque
 from torch.distributions import Categorical
 from NeuralNet import PolicyNet, BaselineNet
 import os
-
+import argparse
 
 class REINFORCEAgent_cartpole:
     def __init__(self, policy, env, gamma=0.99, num_episodes=500, lr=1e-2, baseline=None, solved_score=300):
@@ -107,37 +107,60 @@ class REINFORCEAgent_cartpole:
             self.update_baseline(observations, returns)
 
             print(f"Episode reward: {self.running_rewards[-1]}")
-
+        
+        torch.save(self.policy.state_dict(), 'Ex1/policy_params.pth')
         return self.running_rewards
 
+    def test(self, env_render, parameters_path):
+        self.env = env_render
+        self.policy.load_state_dict(torch.load(parameters_path, weights_only = True))
+        self.policy.eval()
+        scores = []
+        for _ in range(1):
+            _, _, _, score = self.run_episode()
+            scores.append(np.sum(score))
 
-def main():
-    env = gym.make('CartPole-v1')
+        print(f"Average score: {np.mean(scores)}")
+        self.env.close()
+
+
+#def main(mode):
+#    env = gym.make('CartPole-v1')
+#
+#    policy = PolicyNet(env, inner=128)
+#    baseline = BaselineNet(env, inner=128)
+#    agent = REINFORCEAgent_cartpole(policy, env, num_episodes=400, gamma=0.99, baseline=baseline)
+#
+#    if mode == "train":
+#        rewards = agent.train()
+#        plt.plot(rewards)
+#        path_cart = os.path.join(os.getcwd(), 'Ex1/Results/Cart.png')
+#        plt.savefig(path_cart)
+#    elif mode == "test":
+#        env_render = gym.make('CartPole-v1', render_mode='human')
+#        agent.test(env_render, 'Ex1/policy_params.pth')
+#    else:
+#        print("Select one : 'train' or 'test'")
+#
+#if __name__ == "__main__":
+#    parser = argparse.ArgumentParser()
+#    parser.add_argument("mode", choices=["train", "test"], help="Select between train and test")
+#    args = parser.parse_args()
+#
+#    main(args.mode)
+
+
+###USED ONLY TO REGISTER THE GIF FOR GITHUB
+def test_and_record():
+    env = gym.make('CartPole-v1', render_mode='rgb_array')
+    env = gym.wrappers.RecordVideo(env, video_folder="videos", episode_trigger=lambda x: True)
 
     policy = PolicyNet(env, inner=128)
     baseline = BaselineNet(env, inner=128)
-
     agent = REINFORCEAgent_cartpole(policy, env, num_episodes=400, gamma=0.99, baseline=baseline)
-    rewards = agent.train()
 
-    plt.plot(rewards)
-    path_cart = os.path.join(os.getcwd(), 'Ex1/Results/Cart.png')
-    plt.savefig(path_cart)
-
-    torch.save(policy.state_dict(), 'Ex1/policy_params.pth')
-
-    env_render = gym.make('CartPole-v1', render_mode='human')
-    policy.eval()
-    scores = []
-    agent.env = env_render
-
-    for _ in range(5):
-        _, _, _, score = agent.run_episode()
-        scores.append(np.sum(score))
-
-    print(f"Average score: {np.mean(scores)}")
-    env_render.close()
-
+    agent.test(env, 'Ex1/policy_params.pth')
+    
 
 if __name__ == "__main__":
-    main()
+    test_and_record()
