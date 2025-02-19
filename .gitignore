@@ -3,13 +3,12 @@ venv/
 env/
 .venv/
 reinforcement_learning
-videos
-
+Lunar_params_try.pth
 # Ignora file temporanei generati da Pygame
 Lunar_try.png
-README.md
+#README.md
 *.jpg
-*.gif
+*mp4
 *.wav
 *.mp3
 *.ogg

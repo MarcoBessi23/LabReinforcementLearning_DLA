@@ -72,10 +72,16 @@ class REINFORCEAgent_Lunar:
     def update_policy(self, observations, log_probs, returns):
         # Compute the advantage and update the policy
         target = returns - self.baseline(torch.stack(observations))
-        loss = (-log_probs * target).mean()
+        
+        policy_loss = (-log_probs * target).mean()
+        entropy_loss = -(log_probs.exp() * log_probs).mean()
+
+        # Total loss (policy loss + entropy bonus)
+        loss = policy_loss + 0.01 * entropy_loss
 
         self.policy_optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.policy.parameters(), max_norm=1.0)
         self.policy_optimizer.step()
 
     def update_baseline(self, observations, returns):
@@ -132,7 +138,7 @@ def main(mode):
 
     policy = LunarPolicy(env, 128)
     baseline = LunarBaseline(env, 128)
-    agent = REINFORCEAgent_Lunar(policy, baseline, env, num_episodes=3000, gamma=0.99)
+    agent = REINFORCEAgent_Lunar(policy, baseline, env, num_episodes=2000, gamma=0.95)
 
     if mode == "train":
         rewards = agent.train()

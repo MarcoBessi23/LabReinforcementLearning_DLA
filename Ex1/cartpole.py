@@ -124,43 +124,43 @@ class REINFORCEAgent_cartpole:
         self.env.close()
 
 
-#def main(mode):
-#    env = gym.make('CartPole-v1')
-#
-#    policy = PolicyNet(env, inner=128)
-#    baseline = BaselineNet(env, inner=128)
-#    agent = REINFORCEAgent_cartpole(policy, env, num_episodes=400, gamma=0.99, baseline=baseline)
-#
-#    if mode == "train":
-#        rewards = agent.train()
-#        plt.plot(rewards)
-#        path_cart = os.path.join(os.getcwd(), 'Ex1/Results/Cart.png')
-#        plt.savefig(path_cart)
-#    elif mode == "test":
-#        env_render = gym.make('CartPole-v1', render_mode='human')
-#        agent.test(env_render, 'Ex1/policy_params.pth')
-#    else:
-#        print("Select one : 'train' or 'test'")
-#
-#if __name__ == "__main__":
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument("mode", choices=["train", "test"], help="Select between train and test")
-#    args = parser.parse_args()
-#
-#    main(args.mode)
-
-
-###USED ONLY TO REGISTER THE GIF FOR GITHUB
-def test_and_record():
-    env = gym.make('CartPole-v1', render_mode='rgb_array')
-    env = gym.wrappers.RecordVideo(env, video_folder="videos", episode_trigger=lambda x: True)
+def main(mode):
+    env = gym.make('CartPole-v1')
 
     policy = PolicyNet(env, inner=128)
     baseline = BaselineNet(env, inner=128)
     agent = REINFORCEAgent_cartpole(policy, env, num_episodes=400, gamma=0.99, baseline=baseline)
 
-    agent.test(env, 'Ex1/policy_params.pth')
-    
+    if mode == "train":
+        rewards = agent.train()
+        plt.plot(rewards)
+        path_cart = os.path.join(os.getcwd(), 'Ex1/Results/Cart.png')
+        plt.savefig(path_cart)
+    elif mode == "test":
+        env_render = gym.make('CartPole-v1', render_mode='human')
+        agent.test(env_render, 'Ex1/policy_params.pth')
+    else:
+        print("Select one : 'train' or 'test'")
 
 if __name__ == "__main__":
-    test_and_record()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("mode", choices=["train", "test"], help="Select between train and test")
+    args = parser.parse_args()
+
+    main(args.mode)
+
+
+###USED ONLY TO REGISTER THE GIF FOR GITHUB
+#def test_and_record():
+#    env = gym.make('CartPole-v1', render_mode='rgb_array')
+#    env = gym.wrappers.RecordVideo(env, video_folder="videos", episode_trigger=lambda x: True)
+#
+#    policy = PolicyNet(env, inner=128)
+#    baseline = BaselineNet(env, inner=128)
+#    agent = REINFORCEAgent_cartpole(policy, env, num_episodes=400, gamma=0.99, baseline=baseline)
+#
+#    agent.test(env, 'Ex1/policy_params.pth')
+#    
+#
+#if __name__ == "__main__":
+#    test_and_record()

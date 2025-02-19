@@ -39,7 +39,6 @@ class LunarPolicy(nn.Module):
         self.fc3 = nn.Linear(inner, env.action_space.n)
 
     def forward(self, s):
-        s = torch.clamp(s, -1, 1)
         s = F.relu(self.fc1(s))
         s = F.relu(self.fc2(s))
         s = F.softmax(self.fc3(s), dim=-1)
@@ -53,8 +52,6 @@ class LunarBaseline(nn.Module):
         self.fc3 = nn.Linear(inner, 1)
         
     def forward(self, s):
-        s = torch.clamp(s, -1, 1)
-        #s = F.normalize(s, dim=1)
         s = F.relu(self.fc1(s))
         s = F.relu(self.fc2(s))
         s = self.fc3(s)
