@@ -36,4 +36,6 @@ Thumbs.db
 #include
 #lib
 Autonomous_Projects
-Ex3
+Ex3/taxi_params.pth
+Ex3/Taxi_PPO.py
+Ex3/Results/taxi_training_plot.png
