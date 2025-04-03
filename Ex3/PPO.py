@@ -59,16 +59,7 @@ class PPO:
                 delta = rewards[t] + self.gamma * mask * next_value  - values[t]
                 gae = delta + self.gamma * self.lam * mask * gae
                 advantages.insert(0, gae)
-
-
-
-                #mask = 1-dones[t]
-                #next_value = mask * next_value
-                #delta = rewards[t] + self.gamma * next_value  - values[t]
-                #gae = delta + self.gamma * self.lam * mask * gae
-                #advantages.insert(0, gae)
-                #next_value = values[t]
-
+                
         return torch.tensor(advantages, dtype=torch.float32)
 
     def update_gae(self, next_state_gae):
@@ -78,7 +69,7 @@ class PPO:
         old_actions  = torch.stack(self.memory.actions).to(device).detach()
         old_logprobs = torch.stack(self.memory.logprobs).to(device).detach()
         values       = torch.tensor(self.memory.state_values, dtype=torch.float32).to(device)
-        advantages = self.compute_gae(rewards, values, dones, next_state_gae)
+        advantages   = self.compute_gae(rewards, values, dones, next_state_gae)
         returns = advantages + values
         clipfracs = []
         
@@ -96,8 +87,8 @@ class PPO:
 
 
                 logprobs, state_values, dist_entropy = self.policy.evaluate(states_batch, actions_batch)
-                ratios = torch.exp(logprobs - logprobs_batch) #.detach()
-                
+                ratios = torch.exp(logprobs - logprobs_batch)
+
                 with torch.no_grad():
                     approx_kl = ((ratios - 1) - logprobs + logprobs_batch).mean()
                     clipfracs += [((ratios - 1.0).abs() > self.eps_clip).float().mean().item()]
